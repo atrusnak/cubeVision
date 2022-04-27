@@ -6,5 +6,5 @@ camera.resolution = (1500,1500)
 camera.start_preview()
 for i in range(100):
     sleep(1)
-    camera.capture('images/solved/solved' + str(i) + '.jpg')
+    camera.capture('images/3corners/3corners' + str(i) + '.jpg')
 camera.stop_preview()

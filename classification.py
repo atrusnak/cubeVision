@@ -114,15 +114,15 @@ data_dir = pathlib.Path(data_dir)
 # """
 
 batch_size = 1
-img_height = 1500
-img_width = 1500
+img_height = 500
+img_width = 500
 data_dir = "images"
 
 """It's good practice to use a validation split when developing your model. Let's use 80% of the images for training, and 20% for validation."""
 
 train_ds = tf.keras.utils.image_dataset_from_directory(
   data_dir,
-  label_mode='binary',
+  label_mode='int',
   validation_split=0.1,
   subset="training",
   seed=123,
@@ -131,7 +131,7 @@ train_ds = tf.keras.utils.image_dataset_from_directory(
 
 val_ds = tf.keras.utils.image_dataset_from_directory(
   data_dir,
-  label_mode='binary',
+  label_mode='int',
   validation_split=0.1,
   subset="validation",
   seed=123,
@@ -325,6 +325,8 @@ When you apply dropout to a layer, it randomly drops out (by setting the activat
 
 Let's create a new neural network with `tf.keras.layers.Dropout` before training it using the augmented images:
 """
+base_model = tf.keras.applications.MobileNetV2(input_shape=(500,500,3), include_top=False, weights='imagenet')
+base_model.trainable = False
 
 model = Sequential([
   data_augmentation,
@@ -343,7 +345,7 @@ model = Sequential([
 """## Compile and train the model"""
 
 model.compile(optimizer='adam',
-              loss=tf.keras.losses.BinaryCrossentropy(from_logits=False),
+              loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
               metrics=['accuracy'])
 
 model.summary()
