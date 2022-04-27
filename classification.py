@@ -122,6 +122,7 @@ data_dir = "images"
 
 train_ds = tf.keras.utils.image_dataset_from_directory(
   data_dir,
+  label_mode='binary',
   validation_split=0.1,
   subset="training",
   seed=123,
@@ -130,6 +131,7 @@ train_ds = tf.keras.utils.image_dataset_from_directory(
 
 val_ds = tf.keras.utils.image_dataset_from_directory(
   data_dir,
+  label_mode='binary',
   validation_split=0.1,
   subset="validation",
   seed=123,
@@ -229,7 +231,7 @@ For this tutorial, choose the `tf.keras.optimizers.Adam` optimizer and `tf.keras
 """
 
 model.compile(optimizer='adam',
-              loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+              loss=tf.keras.losses.BinaryCrossentropy(from_logits=True),
               metrics=['accuracy'])
 
 """## Model summary
@@ -296,12 +298,10 @@ You will implement data augmentation using the following Keras preprocessing lay
 
 data_augmentation = keras.Sequential(
   [
-    layers.RandomFlip("horizontal",
+    layers.RandomFlip("horizontal_and_vertical",
                       input_shape=(img_height,
                                   img_width,
-                                  3)),
-    layers.RandomRotation(0.1),
-    layers.RandomZoom(0.1),
+                                  3))
   ]
 )
 
@@ -333,9 +333,8 @@ model = Sequential([
   layers.MaxPooling2D(),
   layers.Conv2D(32, 3, padding='same', activation='relu'),
   layers.MaxPooling2D(),
-  layers.Conv2D(64, 3, padding='same', activation='relu'),
-  layers.MaxPooling2D(),
-  layers.Dropout(0.2),
+  # layers.Conv2D(64, 3, padding='same', activation='relu'),
+  # layers.MaxPooling2D(),
   layers.Flatten(),
   layers.Dense(128, activation='relu'),
   layers.Dense(num_classes)
@@ -344,7 +343,7 @@ model = Sequential([
 """## Compile and train the model"""
 
 model.compile(optimizer='adam',
-              loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+              loss=tf.keras.losses.BinaryCrossentropy(from_logits=False),
               metrics=['accuracy'])
 
 model.summary()
@@ -353,7 +352,8 @@ epochs = 15
 history = model.fit(
   train_ds,
   validation_data=val_ds,
-  epochs=epochs
+  epochs=epochs,
+  batch_size=2
 )
 
 """## Visualize training results
