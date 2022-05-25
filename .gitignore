@@ -1,5 +1,6 @@
 # ingore blenderProc output
 *.hdf5
+haven/
 
 
 # Byte-compiled / optimized / DLL files
