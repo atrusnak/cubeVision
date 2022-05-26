@@ -3,6 +3,7 @@ import numpy as np
 import bpy
 import math
 import random
+import csv
 
 
 # cube coloring functions
@@ -58,10 +59,11 @@ def generateImages():
         if(color == 5):
             white(cube)
     print(scramble)
+    with open("output/scrambles.csv", 'a') as f:
+        writer = csv.writer(f)
+        writer.writerow(scramble)
     scramble = []
-    f = open("output/scrambles.txt", 'a')
-    f.writelines(scramble)
-    f.write('\n')
+
     # can compute point of interest if you want to point the camera. Just used origin tho
     # poi = bproc.object.compute_poi(c)
 
