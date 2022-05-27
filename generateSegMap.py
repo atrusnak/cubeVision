@@ -59,7 +59,7 @@ def generateImages():
         if(color == 5):
             white(cube)
     print(scramble)
-    with open("outputSegMap/scrambles.csv", 'a') as f:
+    with open("outputWithPOIvariation/scrambles.csv", 'a') as f:
         writer = csv.writer(f)
         writer.writerow(scramble)
     scramble = []
@@ -110,7 +110,7 @@ def generateImages():
     # Sample random camera location above objects
     location = np.random.uniform([0.1, 0.5, 0.1], [-0.1, 0.2, -0.1])
     # Compute rotation based on vector going from location towards poi
-    rotation_matrix = bproc.camera.rotation_from_forward_vec(np.array([0,0,0]) - location)
+    rotation_matrix = bproc.camera.rotation_from_forward_vec(np.random.uniform([0.05, 0.05, 0.05], [-0.05, -0.05, -0.05]) - location)
     # Add homog cam pose based on location an rotation
     cam2world_matrix = bproc.math.build_transformation_mat(location, rotation_matrix)
     bproc.camera.add_camera_pose(cam2world_matrix)
@@ -130,7 +130,7 @@ def generateImages():
 
 
 # write to file
-    bproc.writer.write_hdf5("outputSegMap", data, append_to_existing_output=True)
+    bproc.writer.write_hdf5("outputWithPOIvariation", data, append_to_existing_output=True)
 
 
 

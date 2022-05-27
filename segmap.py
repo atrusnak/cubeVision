@@ -18,15 +18,22 @@ from matplotlib import pyplot as plt
 
 images = []
 for i in range(150):
-    with h5py.File('outputSegMap/' + str(i) + '.hdf5', 'r') as f:
-        image = np.array(f['colors'])
-        images.append(image)
+    try:
+        with h5py.File('outputWithPOIvariation/' + str(i) + '.hdf5', 'r') as f:
+            image = np.array(f['colors'])
+            images.append(image)
+    except:
+        print('skipped file')
+
 
 segMaps = []
 for i in range(150):
-    with h5py.File('outputSegMap/' + str(i) + '.hdf5', 'r') as f:
-        segMap= np.array(f['class_segmaps'])
-        segMaps.append(segMap)
+    try:
+        with h5py.File('outputWithPOIvariation/' + str(i) + '.hdf5', 'r') as f:
+            segMap= np.array(f['class_segmaps'])
+            segMaps.append(segMap)
+    except:
+        print('skipped file')
 
 
 images = np.array(images,dtype='float32') / 255.0
@@ -117,7 +124,7 @@ print(history.history.keys())
 Create plots of loss and accuracy on the training and validation sets:
 """
 
-model.save_weights('UNET')
+model.save_weights('UNET2')
 
 acc = history.history['accuracy']
 val_acc = history.history['val_accuracy']
