@@ -13,14 +13,21 @@ from tensorflow.keras import layers
 from tensorflow.keras.models import Sequential
 import pandas as pd
 from sklearn.preprocessing import MultiLabelBinarizer
-from keras.applications.vgg16 import VGG16
-from keras.applications.vgg16 import preprocess_input
+from keras.applications.resnet_v2 import ResNet50V2
+from keras.applications.resnet_v2 import preprocess_input
+import cv2
 
+
+# max of 436
+NUM_SAMPLES = 400
 images = []
-for i in range(436):
-    with h5py.File('output/' + str(i) + '.hdf5', 'r') as f:
-        image = np.array(f['colors'])
-        images.append(image)
+for i in range(NUM_SAMPLES):
+    try:
+        with h5py.File('output/' + str(i) + '.hdf5', 'r') as f:
+            image = np.array(f['colors'])
+            images.append(image)
+    except:
+        print("skipped" + str(i))
 
 
 images = np.array(images,dtype='float32')
@@ -29,7 +36,8 @@ images = np.array(images,dtype='float32')
 
 labels = pd.read_csv('output/scrambles.csv', header=None).to_numpy()
 oneHotLabels = []
-for l in range(len(labels)):
+# len lables
+for l in range(NUM_SAMPLES):
     oneHot = np.zeros(54)
     label = labels[l]
     for i in range(len(label)):
@@ -39,6 +47,7 @@ for l in range(len(labels)):
         
 oneHotLabels = np.array(oneHotLabels)
 
+# scale images
 # images = preprocess_input(images)
 
 
@@ -48,25 +57,50 @@ img_width = 512
 
 x_train, x_test, y_train, y_test = train_test_split(images, oneHotLabels, test_size = .10)
 
-print(x_train.shape)
-print(y_test.shape)
+print(images.shape)
 
 num_classes = 54
 
-base_model = VGG16(input_shape=(512,512,3), weights='imagenet', include_top=False, pooling='avg')
+mask_model = tf.keras.models.load_model("MaskerV1")
+masks_train = mask_model.predict(x_train)
+masks_test = mask_model.predict(x_test)
 
-for layer in base_model.layers:
-    layer.trainable=False
+print(masks_train[0].tolist())
 
+
+combined_train = []
+
+for m in range(len(masks_train)):
+    binarized = np.where(masks_train[m] > 0.001, 1 , 0)
+    combined_train.append(x_train[m]* binarized)
+
+combined_train = preprocess_input(np.array(combined_train))
+
+combined_test = []
+for m in range(len(masks_test)):
+    binarized = np.where(masks_test[m] > 0.001, 1 , 0)
+    combined_test.append(x_test[m]* binarized)
+
+combined_test = preprocess_input(np.array(combined_test))
+
+
+cv2.imshow('idk',combined_train[0])
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+# plt.show()
+    
+# combined_train = np.concatenate([x_train, masks_train], axis = 3)
+# combined_test = np.concatenate([x_test, masks_test], axis = 3)
+
+
+resnet = ResNet50V2(weights='imagenet', include_top=False, input_shape=(512,512,3))
+
+ 
 model = Sequential([
-    layers.Rescaling(1./255),
-    # base_model,
-    layers.Conv2D(32,3, strides=2,padding='same'),
-    layers.MaxPooling2D(pool_size=(2,2)),
-    layers.Conv2D(64,3, strides=2,padding='same'),
-    layers.MaxPooling2D(pool_size=(2,2)),
+    resnet,
+    # layers.Conv2D(32,3, strides=2,padding='same',input_shape=(512,512,4)),
+    # layers.Conv2D(64,3, strides=2,padding='same'),
     layers.Flatten(),
-    # layers.Dense(512, activation='relu'),
     layers.Dense(128, activation='relu'),
     layers.Dense(num_classes, activation='sigmoid')
 ])
@@ -88,11 +122,12 @@ View all the layers of the network using the model's `Model.summary` method:
 
 """## Train the model"""
 
-epochs=40
+epochs=20
 history = model.fit(
-    x_train,y_train,
+    combined_train,y_train,
     epochs=epochs,
-    batch_size = batch_size
+    batch_size = batch_size,
+    validation_data=(combined_test, y_test)
 )
 
 model.summary()
@@ -100,8 +135,10 @@ model.summary()
 
 Create plots of loss and accuracy on the training and validation sets:
 """
+model.save_weights("ModelWithMask")
 
 acc = history.history['accuracy']
+val_acc = history.history['val_accuracy']
 
 loss = history.history['loss']
 val_loss = history.history['val_loss']
@@ -111,6 +148,7 @@ epochs_range = range(epochs)
 plt.figure(figsize=(8, 8))
 plt.subplot(1, 2, 1)
 plt.plot(epochs_range, acc, label='Training Accuracy')
+plt.plot(epochs_range, val_acc, label='Validation Accuracy')
 plt.legend(loc='lower right')
 plt.title('Training and Validation Accuracy')
 

@@ -17,7 +17,7 @@ from keras.applications.efficientnet_v2 import preprocess_input
 from matplotlib import pyplot as plt
 
 images = []
-for i in range(150):
+for i in range(200):
     try:
         with h5py.File('outputWithPOIvariation/' + str(i) + '.hdf5', 'r') as f:
             image = np.array(f['colors'])
@@ -27,7 +27,7 @@ for i in range(150):
 
 
 segMaps = []
-for i in range(150):
+for i in range(200):
     try:
         with h5py.File('outputWithPOIvariation/' + str(i) + '.hdf5', 'r') as f:
             segMap= np.array(f['class_segmaps'])
@@ -125,6 +125,7 @@ Create plots of loss and accuracy on the training and validation sets:
 """
 
 model.save_weights('UNET2')
+model.save("MaskerV1")
 
 acc = history.history['accuracy']
 val_acc = history.history['val_accuracy']

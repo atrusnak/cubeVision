@@ -1,2 +1,2 @@
-model_checkpoint_path: "UNET"
-all_model_checkpoint_paths: "UNET"
+model_checkpoint_path: "ModelWithMask"
+all_model_checkpoint_paths: "ModelWithMask"
