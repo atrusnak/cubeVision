@@ -59,7 +59,7 @@ def generateImages():
         if(color == 5):
             white(cube)
     print(scramble)
-    with open("outputWithPOIvariation/scrambles.csv", 'a') as f:
+    with open("outputStickerSeg/scrambles.csv", 'a') as f:
         writer = csv.writer(f)
         writer.writerow(scramble)
     scramble = []
@@ -75,13 +75,15 @@ def generateImages():
 
     # get face cubes and assign them to a different category for image segmentation later
     bprocFaceCubes = []
+    c = 1
     for i in range(len(bprocCubes)):
         cube = bprocCubes[i]
         if('FRONT' in cube.get_name()):
             bprocFaceCubes.append(cube)
-            bprocCubes[i].set_cp("category_id",1)
-        elif('025' in cube.get_name()):
-            bprocCubes[i].set_cp("category_id",2)
+            bprocCubes[i].set_cp("category_id",c)
+            c += 1
+        # elif('025' in cube.get_name()):
+            # bprocCubes[i].set_cp("category_id",99)
 
 
 
@@ -130,7 +132,7 @@ def generateImages():
 
 
 # write to file
-    bproc.writer.write_hdf5("outputWithPOIvariation", data, append_to_existing_output=True)
+    bproc.writer.write_hdf5("outputStickerSeg", data, append_to_existing_output=True)
 
 
 

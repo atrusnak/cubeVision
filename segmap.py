@@ -17,9 +17,9 @@ from keras.applications.efficientnet_v2 import preprocess_input
 from matplotlib import pyplot as plt
 
 images = []
-for i in range(200):
+for i in range(100):
     try:
-        with h5py.File('outputWithPOIvariation/' + str(i) + '.hdf5', 'r') as f:
+        with h5py.File('outputStickerSeg/' + str(i) + '.hdf5', 'r') as f:
             image = np.array(f['colors'])
             images.append(image)
     except:
@@ -27,9 +27,9 @@ for i in range(200):
 
 
 segMaps = []
-for i in range(200):
+for i in range(100):
     try:
-        with h5py.File('outputWithPOIvariation/' + str(i) + '.hdf5', 'r') as f:
+        with h5py.File('outputStickerSeg/' + str(i) + '.hdf5', 'r') as f:
             segMap= np.array(f['class_segmaps'])
             segMaps.append(segMap)
     except:
@@ -48,7 +48,7 @@ print(np.max(segMaps[0]))
 # images = preprocess_input(images)
 
 
-batch_size = 4
+batch_size = 2
 img_height = 512
 img_width = 512
 image_size = 512
@@ -58,7 +58,7 @@ x_train, x_test, y_train, y_test = train_test_split(images, segMaps, test_size =
 # print(x_train.shape)
 # print(y_test.shape)
 
-num_classes = 2
+num_classes = 10
 
 # https://github.com/nikhilroxtomar/UNet-Segmentation-in-Keras-TensorFlow/blob/master/unet-segmentation.ipynb
 
@@ -124,8 +124,8 @@ print(history.history.keys())
 Create plots of loss and accuracy on the training and validation sets:
 """
 
-model.save_weights('UNET2')
-model.save("MaskerV1")
+# model.save_weights('UNET2')
+model.save("MaskerV2")
 
 acc = history.history['accuracy']
 val_acc = history.history['val_accuracy']
