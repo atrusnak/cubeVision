@@ -29,7 +29,7 @@ def white(cube):
 def generateImages():
     bproc.init()
     # load rubik's cube model (already positioned at (0,0,0))
-    cubeList = bproc.loader.load_blend("cube.blend")
+    bproc.loader.load_blend("cube.blend")
 
     # collect objects as bpy objects (as opposed to blenderproc)
     objects = bpy.data.objects
