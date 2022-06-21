@@ -87,7 +87,7 @@ def generateImages():
 
 
 
-    bproc.camera.set_resolution(512,512)
+    bproc.camera.set_resolution(128,128)
 
 
 
@@ -121,8 +121,8 @@ def generateImages():
     bproc.renderer.set_noise_threshold(0.01)
 
 # set random hdri background and lighting
-    haven_hdri_path = bproc.loader.get_random_world_background_hdr_img_path_from_haven("haven")
-    bproc.world.set_world_background_hdr_img(haven_hdri_path)
+    #haven_hdri_path = bproc.loader.get_random_world_background_hdr_img_path_from_haven("haven")
+    #bproc.world.set_world_background_hdr_img(haven_hdri_path)
 
     data = bproc.renderer.render()
 
@@ -135,5 +135,7 @@ def generateImages():
     bproc.writer.write_hdf5("outputStickerSeg", data, append_to_existing_output=True)
 
 
+for i in range(1000):
+    generateImages()
+    bproc.utility.reset_keyframes()
 
-generateImages()
