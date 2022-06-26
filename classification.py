@@ -9,8 +9,8 @@ import numpy as np
 import h5py
 from sklearn.model_selection import train_test_split
 from tensorflow import keras
-from tensorflow.keras import layers
-from tensorflow.keras.models import Sequential
+from keras import layers
+from keras.models import Sequential
 import pandas as pd
 from sklearn.preprocessing import MultiLabelBinarizer
 from keras.applications.resnet_v2 import ResNet50V2
@@ -23,7 +23,7 @@ NUM_SAMPLES = 400
 images = []
 for i in range(NUM_SAMPLES):
     try:
-        with h5py.File('output/' + str(i) + '.hdf5', 'r') as f:
+        with h5py.File('outputStickerSeg/' + str(i) + '.hdf5', 'r') as f:
             image = np.array(f['colors'])
             images.append(image)
     except:

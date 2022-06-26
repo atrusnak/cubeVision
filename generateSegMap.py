@@ -132,10 +132,10 @@ def generateImages():
 
 
 # write to file
-    bproc.writer.write_hdf5("outputStickerSeg", data, append_to_existing_output=True)
+    bproc.writer.write_hdf5("outputTest", data, append_to_existing_output=True)
 
 
-for i in range(1000):
+for i in range(1):
     generateImages()
     bproc.utility.reset_keyframes()
 

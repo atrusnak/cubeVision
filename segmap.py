@@ -16,8 +16,9 @@ from keras.applications.efficientnet_v2 import EfficientNetV2L
 from keras.applications.efficientnet_v2 import preprocess_input
 from matplotlib import pyplot as plt
 
+numImages = 20
 images = []
-for i in range(100):
+for i in range(numImages):
     try:
         with h5py.File('outputStickerSeg/' + str(i) + '.hdf5', 'r') as f:
             image = np.array(f['colors'])
@@ -27,7 +28,7 @@ for i in range(100):
 
 
 segMaps = []
-for i in range(100):
+for i in range(numImages):
     try:
         with h5py.File('outputStickerSeg/' + str(i) + '.hdf5', 'r') as f:
             segMap= np.array(f['class_segmaps'])
@@ -43,17 +44,27 @@ print(segMaps.shape)
 print(np.max(images[0]))
 print(np.max(segMaps[0]))
 
+segMapChannels = np.zeros((numImages,128,128,10))
+for m in range(numImages):
+    for i in range(128):
+        for j in range(128):
+            classIndex = segMaps[m][i,j] 
+            segMapChannels[m][i][j][int(classIndex)]=1
+            
+
+print(segMapChannels.shape)
+print(segMapChannels[0])
 
 
 # images = preprocess_input(images)
 
 
 batch_size = 2
-img_height = 512
-img_width = 512
-image_size = 512
+img_height = 128
+img_width = 128
+image_size = 128
 
-x_train, x_test, y_train, y_test = train_test_split(images, segMaps, test_size = .20)
+x_train, x_test, y_train, y_test = train_test_split(images, segMapChannels, test_size = .20)
 
 # print(x_train.shape)
 # print(y_test.shape)
@@ -61,7 +72,6 @@ x_train, x_test, y_train, y_test = train_test_split(images, segMaps, test_size =
 num_classes = 10
 
 # https://github.com/nikhilroxtomar/UNet-Segmentation-in-Keras-TensorFlow/blob/master/unet-segmentation.ipynb
-
 def down_block(x, filters, kernel_size=(3, 3), padding="same", strides=1):
     c = keras.layers.Conv2D(filters, kernel_size, padding=padding, strides=strides, activation="relu")(x)
     c = keras.layers.Conv2D(filters, kernel_size, padding=padding, strides=strides, activation="relu")(c)
@@ -97,7 +107,7 @@ def UNet():
     u3 = up_block(u2, c2, f[1]) #32 -> 64
     u4 = up_block(u3, c1, f[0]) #64 -> 128
     
-    outputs = keras.layers.Conv2D(1, 1, padding="same", activation="sigmoid")(u4)
+    outputs = keras.layers.Conv2D(num_classes, 1, padding="same", activation="sigmoid")(u4)
     model = keras.models.Model(inputs, outputs)
     return model
 
@@ -109,7 +119,7 @@ model.summary()
 
 
 
-epochs=10
+epochs=5
 history = model.fit(
     x_train,y_train,
     epochs=epochs,
@@ -125,7 +135,7 @@ Create plots of loss and accuracy on the training and validation sets:
 """
 
 # model.save_weights('UNET2')
-model.save("MaskerV2")
+#model.save("MaskerV2")
 
 acc = history.history['accuracy']
 val_acc = history.history['val_accuracy']
@@ -154,144 +164,24 @@ testPredMasks = model.predict(x_test)
 testPredMask = testPredMasks[0]
 print(testPredMask.shape)
 
+def maskToImage(mask):
+    image = np.zeros((128,128))
+    for i in range(mask.shape[0]):
+        for j in range(mask.shape[1]):
+            for c in range(mask.shape[2]):
+                if mask[i,j,c] == 1:
+                    image[i,j]=c
+    return image/10.0
+            
+
+print(np.sum(testTrueMask))
+print(np.sum(testPredMask))
+
 
 plt.imshow(testImage)
 plt.show()
-plt.imshow(testTrueMask)
+plt.imshow(maskToImage(testTrueMask))
 plt.show()
-plt.imshow(testPredMask)
+plt.imshow(maskToImage(testPredMask))
 
 plt.show()
-
-
-# """The plots show that training accuracy and validation accuracy are off by large margins, and the model has achieved only around 60% accuracy on the validation set.
-
-# Let's inspect what went wrong and try to increase the overall performance of the model.
-
-# ## Overfitting
-
-# In the plots above, the training accuracy is increasing linearly over time, whereas validation accuracy stalls around 60% in the training process. Also, the difference in accuracy between training and validation accuracy is noticeable—a sign of [overfitting](https://www.tensorflow.org/tutorials/keras/overfit_and_underfit).
-
-# When there are a small number of training examples, the model sometimes learns from noises or unwanted details from training examples—to an extent that it negatively impacts the performance of the model on new examples. This phenomenon is known as overfitting. It means that the model will have a difficult time generalizing on a new dataset.
-
-# There are multiple ways to fight overfitting in the training process. In this tutorial, you'll use *data augmentation* and add *Dropout* to your model.
-
-# ## Data augmentation
-
-# Overfitting generally occurs when there are a small number of training examples. [Data augmentation](./data_augmentation.ipynb) takes the approach of generating additional training data from your existing examples by augmenting them using random transformations that yield believable-looking images. This helps expose the model to more aspects of the data and generalize better.
-
-# You will implement data augmentation using the following Keras preprocessing layers: `tf.keras.layers.RandomFlip`, `tf.keras.layers.RandomRotation`, and `tf.keras.layers.RandomZoom`. These can be included inside your model like other layers, and run on the GPU.
-# """
-
-# data_augmentation = keras.Sequential(
-#   [
-#     layers.RandomFlip("horizontal_and_vertical",
-#                       input_shape=(img_height,
-#                                   img_width,
-#                                   3))
-#   ]
-# )
-
-# """Let's visualize what a few augmented examples look like by applying data augmentation to the same image several times:"""
-
-# # plt.figure(figsize=(10, 10))
-# # for images, _ in train_ds.take(1):
-# #   for i in range(9):
-# #     augmented_images = data_augmentation(images)
-# #     ax = plt.subplot(3, 3, i + 1)
-# #     plt.imshow(augmented_images[0].numpy().astype("uint8"))
-# #     plt.axis("off")
-
-# """You will use data augmentation to train a model in a moment.
-
-# ## Dropout
-
-# Another technique to reduce overfitting is to introduce [dropout](https://developers.google.com/machine-learning/glossary#dropout_regularization) regularization to the network.
-
-# When you apply dropout to a layer, it randomly drops out (by setting the activation to zero) a number of output units from the layer during the training process. Dropout takes a fractional number as its input value, in the form such as 0.1, 0.2, 0.4, etc. This means dropping out 10%, 20% or 40% of the output units randomly from the applied layer.
-
-# Let's create a new neural network with `tf.keras.layers.Dropout` before training it using the augmented images:
-# """
-# base_model = tf.keras.applications.MobileNetV2(input_shape=(500,500,3), include_top=False, weights='imagenet')
-# base_model.trainable = False
-
-# model = Sequential([
-#   data_augmentation,
-#   layers.Rescaling(1./255),
-#   layers.Conv2D(16, 3, padding='same', activation='relu'),
-#   layers.MaxPooling2D(),
-#   layers.Conv2D(32, 3, padding='same', activation='relu'),
-#   layers.MaxPooling2D(),
-#   # layers.Conv2D(64, 3, padding='same', activation='relu'),
-#   # layers.MaxPooling2D(),
-#   layers.Flatten(),
-#   layers.Dense(128, activation='relu'),
-#   layers.Dense(num_classes)
-# ])
-
-# """## Compile and train the model"""
-
-# model.compile(optimizer='adam',
-#               loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
-#               metrics=['accuracy'])
-
-# model.summary()
-
-# epochs = 15
-# history = model.fit(
-#   train_ds,
-#   validation_data=val_ds,
-#   epochs=epochs,
-#   batch_size=2
-# )
-
-# """## Visualize training results
-
-# After applying data augmentation and `tf.keras.layers.Dropout`, there is less overfitting than before, and training and validation accuracy are closer aligned:
-# """
-
-# acc = history.history['accuracy']
-# val_acc = history.history['val_accuracy']
-
-# loss = history.history['loss']
-# val_loss = history.history['val_loss']
-
-# epochs_range = range(epochs)
-
-# plt.figure(figsize=(8, 8))
-# plt.subplot(1, 2, 1)
-# plt.plot(epochs_range, acc, label='Training Accuracy')
-# plt.plot(epochs_range, val_acc, label='Validation Accuracy')
-# plt.legend(loc='lower right')
-# plt.title('Training and Validation Accuracy')
-
-# plt.subplot(1, 2, 2)
-# plt.plot(epochs_range, loss, label='Training Loss')
-# plt.plot(epochs_range, val_loss, label='Validation Loss')
-# plt.legend(loc='upper right')
-# plt.title('Training and Validation Loss')
-# plt.show()
-
-# """## Predict on new data
-
-# Finally, let's use our model to classify an image that wasn't included in the training or validation sets.
-
-# Note: Data augmentation and dropout layers are inactive at inference time.
-# """
-
-# # sunflower_url = "https://storage.googleapis.com/download.tensorflow.org/example_images/592px-Red_sunflower.jpg"
-# # sunflower_path = tf.keras.utils.get_file('Red_sunflower', origin=sunflower_url)
-
-# # img = tf.keras.utils.load_img(
-# #     sunflower_path, target_size=(img_height, img_width)
-# # )
-# # img_array = tf.keras.utils.img_to_array(img)
-# # img_array = tf.expand_dims(img_array, 0) # Create a batch
-
-# # predictions = model.predict(img_array)
-# # score = tf.nn.softmax(predictions[0])
-
-# # print(
-# #     "This image most likely belongs to {} with a {:.2f} percent confidence."
-# #     .format(class_names[np.argmax(score)], 100 * np.max(score))
-# # )
