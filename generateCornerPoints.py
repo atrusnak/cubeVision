@@ -64,7 +64,6 @@ def generateImages():
     # with open("outputStickerSeg/scrambles.csv", 'a') as f:
     #     writer = csv.writer(f)
     #     writer.writerow(scramble)
-    scramble = []
 
 
 
@@ -79,16 +78,17 @@ def generateImages():
 
     # get face cubes and assign them to a different category for image segmentation later
     bprocFaceCubes = []
-    c = 1
-    for i in range(len(bprocCubes)):
-        cube = bprocCubes[i]
+    for i, cube in enumerate(bprocCubes):
         if('FRONT' in cube.get_name()):
             bprocFaceCubes.append(cube)
-            bprocCubes[i].set_cp("category_id",c)
-            c += 1
-        # elif('025' in cube.get_name()):
-            # bprocCubes[i].set_cp("category_id",99)
+        else:
+            cube.set_cp("category_id", 7)
+            
 
+    for i, faceCube in enumerate(bprocFaceCubes):
+            faceCube.set_cp("category_id",scramble[i]+1)
+    # reset scramble after using it for id's
+    scramble = []
 
 
     imageSize=256
@@ -178,14 +178,21 @@ def generateImages():
     data = bproc.renderer.render()
 
 # for segmentation map
-#    data.update(bproc.renderer.render_segmap(map_by=["class"]))
+    data.update(bproc.renderer.render_segmap(map_by=["instance","class"]))
 
 
 # write to file
-    bproc.writer.write_hdf5("outputTest", data, append_to_existing_output=True)
+    # bproc.writer.write_hdf5("outputTest", data, append_to_existing_output=True)
+
+# Write data to coco file
+    bproc.writer.write_coco_annotations("outputTest",
+                                    instance_segmaps=data["instance_segmaps"],
+                                    instance_attribute_maps=data["instance_attribute_maps"],
+                                    colors=data["colors"],
+                                    color_file_format="JPEG")
 
 
-for i in range(10):
+for i in range(1):
     generateImages()
     bproc.utility.reset_keyframes()
 
