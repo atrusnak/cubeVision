@@ -45,7 +45,9 @@ def generateImages():
 
     # record the scramble as a 1D vector
     scramble = []
+    faceCubes.reverse()
     for cube in faceCubes:
+        print(cube.name)
         color = random.randint(0,5)
         scramble.append(color)
         if(color == 0):
@@ -61,9 +63,9 @@ def generateImages():
         if(color == 5):
             white(cube)
     print(scramble)
-    # with open("outputStickerSeg/scrambles.csv", 'a') as f:
-    #     writer = csv.writer(f)
-    #     writer.writerow(scramble)
+    with open("outputTest/scrambles.csv", 'a') as f:
+        writer = csv.writer(f)
+        writer.writerow(scramble)
 
 
 
@@ -80,6 +82,7 @@ def generateImages():
     bprocFaceCubes = []
     for i, cube in enumerate(bprocCubes):
         if('FRONT' in cube.get_name()):
+            print(cube.get_name())
             bprocFaceCubes.append(cube)
         else:
             cube.set_cp("category_id", 7)
@@ -182,14 +185,16 @@ def generateImages():
 
 
 # write to file
-    # bproc.writer.write_hdf5("outputTest", data, append_to_existing_output=True)
+    bproc.writer.write_hdf5("outputTest", data, append_to_existing_output=True)
 
 # Write data to coco file
     bproc.writer.write_coco_annotations("outputTest",
                                     instance_segmaps=data["instance_segmaps"],
                                     instance_attribute_maps=data["instance_attribute_maps"],
                                     colors=data["colors"],
-                                    color_file_format="JPEG")
+                                    color_file_format="JPEG",
+                                    append_to_existing_output=True)
+
 
 
 for i in range(1):
