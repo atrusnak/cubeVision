@@ -9,7 +9,7 @@ NUM_SAMPLES = 10
 images = []
 for i in range(NUM_SAMPLES):
     try:
-        with h5py.File('outputTest/' + str(i) + '.hdf5', 'r') as f:
+        with h5py.File('outputCornerPrediction/' + str(i) + '.hdf5', 'r') as f:
             image = np.array(f['colors'])
             images.append(image)
     except: print("skipped" + str(i))
@@ -19,7 +19,7 @@ images = np.array(images,dtype='float32')/255.0
 
 
 
-labels = pd.read_csv('outputTest/cornerPoints.csv', header=None).to_numpy()
+predictions = pd.read_csv('outputTest/predictedCornerPoints.csv', header=None).to_numpy()
 
 
 batch_size = 8
@@ -27,13 +27,11 @@ img_height = 256
 img_width = 256
 
 
-print(images.shape)
-print(labels.shape)
 
 
 for i in range(10):
     testImage = images[i]
-    testLabel = labels[i]
+    testLabel = predictions[i]
 
     plt.imshow(testImage)
     plt.plot(testLabel[0],256-testLabel[1], 'bo')
