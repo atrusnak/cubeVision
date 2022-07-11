@@ -88,8 +88,25 @@ def generateImages():
         #     cube.set_cp("category_id", 7)
             
 
+    colorDict = {}
+    usedColors = []
+    counter = 0
+    newScramble = list(range(9))
+    for i, c in enumerate(scramble):
+        if c not in usedColors:
+            usedColors.append(c)
+            counter+=1
+            colorDict[c] = counter
+            newScramble[i] = counter
+        else:
+            newScramble[i] = colorDict[c]
+
+    
+
+    print(newScramble)
+
     for i, faceCube in enumerate(bprocFaceCubes):
-            faceCube.set_cp("category_id",scramble[i]+1)
+            faceCube.set_cp("category_id",newScramble[i])
     # reset scramble after using it for id's
     scramble = []
 
@@ -158,7 +175,7 @@ def generateImages():
     print(cameraPoints)
     print(pixelPoints)
 
-    with open("outputCornerPrediction/cornerPoints.csv", 'a') as f:
+    with open("outputTest/cornerPoints.csv", 'a') as f:
         writer = csv.writer(f)
         writer.writerow(pixelPoints)
 
@@ -181,23 +198,23 @@ def generateImages():
     data = bproc.renderer.render()
 
 # for segmentation map
-    data.update(bproc.renderer.render_segmap(map_by=["class"]))
+    data.update(bproc.renderer.render_segmap(map_by=["class", "instance"]))
 
 
 # write to file
-    bproc.writer.write_hdf5("outputCornerPrediction", data, append_to_existing_output=True)
+    bproc.writer.write_hdf5("outputTest", data, append_to_existing_output=True)
 
 # Write data to coco file
-    # bproc.writer.write_coco_annotations("outputTest",
-    #                                 instance_segmaps=data["instance_segmaps"],
-    #                                 instance_attribute_maps=data["instance_attribute_maps"],
-    #                                 colors=data["colors"],
-    #                                 color_file_format="JPEG",
-    #                                 append_to_existing_output=True)
+    bproc.writer.write_coco_annotations("outputTest",
+                                    instance_segmaps=data["instance_segmaps"],
+                                    instance_attribute_maps=data["instance_attribute_maps"],
+                                    colors=data["colors"],
+                                    color_file_format="JPEG",
+                                    append_to_existing_output=True)
 
 
 
-for i in range(30):
+for i in range(1):
     generateImages()
     bproc.utility.reset_keyframes()
 
