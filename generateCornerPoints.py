@@ -63,9 +63,9 @@ def generateImages():
         if(color == 5):
             white(cube)
     print(scramble)
-    with open("outputTest/scrambles.csv", 'a') as f:
-        writer = csv.writer(f)
-        writer.writerow(scramble)
+    # with open("outputTest/scrambles.csv", 'a') as f:
+    #     writer = csv.writer(f)
+    #     writer.writerow(scramble)
 
 
 
@@ -84,29 +84,10 @@ def generateImages():
         if('FRONT' in cube.get_name()):
             print(cube.get_name())
             bprocFaceCubes.append(cube)
-        # else:
-        #     cube.set_cp("category_id", 7)
             
 
-    colorDict = {}
-    usedColors = []
-    counter = 0
-    newScramble = list(range(9))
-    for i, c in enumerate(scramble):
-        if c not in usedColors:
-            usedColors.append(c)
-            counter+=1
-            colorDict[c] = counter
-            newScramble[i] = counter
-        else:
-            newScramble[i] = colorDict[c]
-
-    
-
-    print(newScramble)
-
     for i, faceCube in enumerate(bprocFaceCubes):
-            faceCube.set_cp("category_id",newScramble[i])
+            faceCube.set_cp("category_id",scramble[i]+1)
     # reset scramble after using it for id's
     scramble = []
 
@@ -175,9 +156,9 @@ def generateImages():
     print(cameraPoints)
     print(pixelPoints)
 
-    with open("outputTest/cornerPoints.csv", 'a') as f:
-        writer = csv.writer(f)
-        writer.writerow(pixelPoints)
+    # with open("outputTest/cornerPoints.csv", 'a') as f:
+    #     writer = csv.writer(f)
+    #     writer.writerow(pixelPoints)
 
 
 
@@ -195,10 +176,14 @@ def generateImages():
     haven_hdri_path = bproc.loader.get_random_world_background_hdr_img_path_from_haven("haven")
     bproc.world.set_world_background_hdr_img(haven_hdri_path)
 
+    with open("outputTest/havenCheck", 'a') as f:
+        writer = csv.writer(f)
+        writer.writerow(haven_hdri_path)
+
     data = bproc.renderer.render()
 
 # for segmentation map
-    data.update(bproc.renderer.render_segmap(map_by=["class", "instance"]))
+    data.update(bproc.renderer.render_segmap(map_by=["instance", "class"]))
 
 
 # write to file
@@ -214,7 +199,13 @@ def generateImages():
 
 
 
-for i in range(1):
-    generateImages()
+for i in range(10):
+    try:
+        generateImages()
+    except Exception as e:
+        print("Unresolved blenderproc error, continueing")
+        with open("outputTest/havenCheck", 'a') as f:
+            writer = csv.writer(f)
+            writer.writerow("Error!")
     bproc.utility.reset_keyframes()
 

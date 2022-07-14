@@ -4,6 +4,7 @@ haven/
 MaskerV1/
 UNET*
 ModelWithMask*
+outputTest/*
 
 
 # Byte-compiled / optimized / DLL files
