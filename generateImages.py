@@ -254,12 +254,11 @@ def generateImages(outputDirectory, imageID):
     bproc.renderer.set_noise_threshold(0.01)
 
 # set random hdri background and lighting
-    # haven_hdri_path = bproc.loader.get_random_world_background_hdr_img_path_from_haven("haven")
-    # bproc.world.set_world_background_hdr_img(haven_hdri_path)
+    haven_hdri_path = bproc.loader.get_random_world_background_hdr_img_path_from_haven("haven")
+    bproc.world.set_world_background_hdr_img(haven_hdri_path)
 
-    # with open(os.path.join(outputDirectory, "havenCheck", 'a')) as f:
-    #     writer = csv.writer(f)
-    #     writer.writerow(haven_hdri_path)
+    with open(os.path.join('outputTest', "havenCheck"), 'a') as f:
+        f.write(haven_hdri_path+'\n')
 
     data = bproc.renderer.render(output_dir='outputTest', file_prefix='')
 
@@ -324,16 +323,17 @@ def main():
     for i in range(numImages):
         try:
             annotations, images = generateImages("dataset/", i)
-            allAnnotations.extend(annotations)
-            allImages.extend(images)
 
         except Exception as e:
             print("Unresolved blenderproc error, continueing")
             i-=1
-            # with open("outputTest/havenCheck", 'a') as f:
-            #     writer = csv.writer(f)
-            #     writer.writerow("Error!")
+            with open(os.path.join('outputTest', "havenCheck"), 'a') as f:
+                f.write("ERROR!")
+            bproc.utility.reset_keyframes()
+            continue
         bproc.utility.reset_keyframes()
+        allAnnotations.extend(annotations)
+        allImages.extend(images)
 
     labelDict["annotations"] = allAnnotations
     labelDict["images"] = allImages
