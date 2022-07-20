@@ -1,0 +1,9 @@
+names:
+- blue
+- orange
+- yellow
+- red
+- white
+- green
+nc: 6
+val: ./images/val/
