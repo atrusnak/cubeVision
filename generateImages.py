@@ -212,7 +212,7 @@ def generateImages(outputDirectory, imageID):
                     [6, 7, 10, 11],
                     [8, 9, 12, 13],
                     [9, 10, 13, 14],
-                    [11, 12, 14, 15]])
+                    [10, 11, 14, 15]])
 
     
 
