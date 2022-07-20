@@ -139,17 +139,48 @@ def generateImages(outputDirectory):
     # left : +x
     # in (toward camera) : +y
     halfCubeLength = 0.025
+    cubeLength = halfCubeLength*2
+    thirdCubeLength = cubeLength/3.0
+
 
     tr = mathutils.Vector((-halfCubeLength, halfCubeLength, halfCubeLength))
     tl = mathutils.Vector((halfCubeLength, halfCubeLength, halfCubeLength))
-    br = mathutils.Vector((-halfCubeLength, halfCubeLength, -halfCubeLength))
     bl = mathutils.Vector((halfCubeLength, halfCubeLength, -halfCubeLength))
+    br = mathutils.Vector((-halfCubeLength, halfCubeLength, -halfCubeLength))
+
+    leftTranslate = np.array((thirdCubeLength,0,0))
+    upTranslate = np.array((0,0,thirdCubeLength))
+
+    brCorner = np.array((-halfCubeLength, halfCubeLength, -halfCubeLength))
+
+    b1 = brCorner
+    b2 = np.add(b1,leftTranslate).tolist()
+    b3 = np.add(b2,leftTranslate).tolist()
+    b4 = np.add(b3,leftTranslate).tolist()
+    mb1 = np.add(b1,upTranslate).tolist()
+    mb2 = np.add(mb1,leftTranslate).tolist()
+    mb3 = np.add(mb2,leftTranslate).tolist()
+    mb4 = np.add(mb3,leftTranslate).tolist()
+    mt1 = np.add(mb1,upTranslate).tolist()
+    mt2 = np.add(mt1,leftTranslate).tolist()
+    mt3 = np.add(mt2,leftTranslate).tolist()
+    mt4 = np.add(mt3,leftTranslate).tolist()
+    t1 = np.add(mt1,upTranslate).tolist()
+    t2 = np.add(t1,leftTranslate).tolist()
+    t3 = np.add(t2,leftTranslate).tolist()
+    t4 = np.add(t3,leftTranslate).tolist()
+    worldPoints = [b1,b2,b3,b4,mb1,mb2,mb3,mb4,mt1,mt2,mt3,mt4,t1,t2,t3,t4]
+
     
-    worldPoints = [tr,tl,br,bl]
+
+
+
+
+    
     cameraPoints = []
     pixelPoints = []
     for p in worldPoints:
-        cameraPoint = bpy_extras.object_utils.world_to_camera_view(scene,camera,p)
+        cameraPoint = bpy_extras.object_utils.world_to_camera_view(scene,camera,mathutils.Vector(p))
         cameraPoints.append(cameraPoint)
 
         pixelPoints.extend([int(n) for n in ((cameraPoint*imageSize).to_tuple(0))[:-1]])
@@ -157,9 +188,9 @@ def generateImages(outputDirectory):
     print(cameraPoints)
     print(pixelPoints)
 
-    # with open("outputTest/cornerPoints.csv", 'a') as f:
-    #     writer = csv.writer(f)
-    #     writer.writerow(pixelPoints)
+    with open("outputTest/cornerPoints.csv", 'a') as f:
+        writer = csv.writer(f)
+        writer.writerow(pixelPoints)
 
 
 
@@ -184,19 +215,19 @@ def generateImages(outputDirectory):
     data = bproc.renderer.render()
 
 # for segmentation map
-    data.update(bproc.renderer.render_segmap(map_by=["instance", "class"]))
+    # data.update(bproc.renderer.render_segmap(map_by=["instance", "class"]))
 
 
 # write to file
-    # bproc.writer.write_hdf5(outputDirectory, data, append_to_existing_output=True)
+    bproc.writer.write_hdf5("outputTest", data, append_to_existing_output=True)
 
 # Write data to coco file
-    bproc.writer.write_coco_annotations(outputDirectory,
-                                    instance_segmaps=data["instance_segmaps"],
-                                    instance_attribute_maps=data["instance_attribute_maps"],
-                                    colors=data["colors"],
-                                    color_file_format="JPEG",
-                                    append_to_existing_output=True)
+    # bproc.writer.write_coco_annotations(outputDirectory,
+    #                                 instance_segmaps=data["instance_segmaps"],
+    #                                 instance_attribute_maps=data["instance_attribute_maps"],
+    #                                 colors=data["colors"],
+    #                                 color_file_format="JPEG",
+    #                                 append_to_existing_output=True)
 
 
 def main():
