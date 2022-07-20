@@ -202,6 +202,7 @@ def generateImages(outputDirectory, imageID):
     # sticker9Corners = [11, 12, 14, 15]
     # stickers = np.array([sticker1Corners,sticker2Corners,sticker3Corners,sticker4Corners,sticker5Corners,sticker6Corners,sticker7Corners,sticker8Corners,sticker9Corners])
 
+    print(pixelPoints)
     stickers = np.array([[0, 1, 4, 5],
                     [1, 2, 5, 6],
                     [2, 3, 6, 7],
@@ -224,11 +225,18 @@ def generateImages(outputDirectory, imageID):
             xValues.append(pixelPoints[i*2])
             yValues.append(pixelPoints[(i*2)+1])
         annotID = (imageID*9)+c
-        annot, image = generateAnnotations(annotID, imageID, scramble[c], xValues, yValues)
-        images.append(image)
+        annot = generateAnnotations(annotID, imageID, scramble[c], xValues, yValues)
+
         annotations.append(annot)
 
 
+    imageDict = {
+            'id':imageID,
+            'file_name':str(imageID).zfill(6)+'.jpg',
+            'width':256,
+            'height':256
+            }
+    images.append(imageDict)
 
 
     
@@ -252,22 +260,21 @@ def generateImages(outputDirectory, imageID):
     #     writer = csv.writer(f)
     #     writer.writerow(haven_hdri_path)
 
-    data = bproc.renderer.render()
+    data = bproc.renderer.render(output_dir='outputTest', file_prefix='')
 
 # for segmentation map
-    # data.update(bproc.renderer.render_segmap(map_by=["instance", "class"]))
+    data.update(bproc.renderer.render_segmap(map_by=["instance", "class"]))
 
 
 # write to file
-    bproc.writer.write_hdf5("outputTest", data, append_to_existing_output=True)
+    # bproc.writer.write_hdf5("outputTest", data, append_to_existing_output=True)
 
 # Write data to coco file
-    # bproc.writer.write_coco_annotations(outputDirectory,
-    #                                 instance_segmaps=data["instance_segmaps"],
-    #                                 instance_attribute_maps=data["instance_attribute_maps"],
-    #                                 colors=data["colors"],
-    #                                 color_file_format="JPEG",
-    #                                 append_to_existing_output=True)
+    bproc.writer.write_coco_annotations('outputTest',
+                                    instance_segmaps=data["instance_segmaps"],
+                                    colors=data["colors"],
+                                    color_file_format="JPEG",
+                                    append_to_existing_output=True)
 
     return annotations, images
 
@@ -316,8 +323,8 @@ def main():
     for i in range(numImages):
         try:
             annotations, images = generateImages("dataset/", i)
-            allAnnotations.append(annotations)
-            allImages.append(images)
+            allAnnotations.extend(annotations)
+            allImages.extend(images)
 
         except Exception as e:
             print("Unresolved blenderproc error, continueing")
@@ -346,12 +353,7 @@ def generateAnnotations(ID, imageID, categoryID, xValues, yValues):
             'category_id':categoryID,
             'bbox':bbox
             }
-    imageDict = {
-            'id':imageID,
-            'file_name':str(imageID)+'.jpg'
-
-            }
-    return annotationDict, imageDict
+    return annotationDict
 
 
 if __name__ == '__main__':
