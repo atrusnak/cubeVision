@@ -49,6 +49,7 @@ def generateImages(outputDirectory, imageID):
     scramble = []
     faceCubes.reverse()
     for cube in faceCubes:
+        print(cube.name)
         color = random.randint(0,5)
         scramble.append(color)
         if(color == 0):
