@@ -180,6 +180,7 @@ def generateImages(outputDirectory, imageID):
     pixelPoints = []
     for p in worldPoints:
         cameraPoint = bpy_extras.object_utils.world_to_camera_view(scene,camera,mathutils.Vector(p))
+        cameraPoint[1] = 1-cameraPoint[1]
         cameraPoints.append(cameraPoint)
 
         pixelPoints.extend([int(n) for n in ((cameraPoint*imageSize).to_tuple(0))[:-1]])
