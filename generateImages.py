@@ -8,6 +8,7 @@ import csv
 import mathutils
 import os
 import sys
+import json
 
 # cube coloring functions
 def red(cube):
@@ -29,7 +30,7 @@ def white(cube):
     cube.rotation_euler =  (math.radians(-90), math.radians(0),math.radians(0))
 
 
-def generateImages(outputDirectory):
+def generateImages(outputDirectory, imageID):
     bproc.init()
     # load rubik's cube model (already positioned at (0,0,0))
     bproc.loader.load_blend("cube.blend")
@@ -48,7 +49,6 @@ def generateImages(outputDirectory):
     scramble = []
     faceCubes.reverse()
     for cube in faceCubes:
-        print(cube.name)
         color = random.randint(0,5)
         scramble.append(color)
         if(color == 0):
@@ -90,7 +90,7 @@ def generateImages(outputDirectory):
     for i, faceCube in enumerate(bprocFaceCubes):
             faceCube.set_cp("category_id",scramble[i]+1)
     # reset scramble after using it for id's
-    scramble = []
+    # scramble = []
 
 
     imageSize=256
@@ -143,10 +143,10 @@ def generateImages(outputDirectory):
     thirdCubeLength = cubeLength/3.0
 
 
-    tr = mathutils.Vector((-halfCubeLength, halfCubeLength, halfCubeLength))
-    tl = mathutils.Vector((halfCubeLength, halfCubeLength, halfCubeLength))
-    bl = mathutils.Vector((halfCubeLength, halfCubeLength, -halfCubeLength))
-    br = mathutils.Vector((-halfCubeLength, halfCubeLength, -halfCubeLength))
+    # tr = mathutils.Vector((-halfCubeLength, halfCubeLength, halfCubeLength))
+    # tl = mathutils.Vector((halfCubeLength, halfCubeLength, halfCubeLength))
+    # bl = mathutils.Vector((halfCubeLength, halfCubeLength, -halfCubeLength))
+    # br = mathutils.Vector((-halfCubeLength, halfCubeLength, -halfCubeLength))
 
     leftTranslate = np.array((thirdCubeLength,0,0))
     upTranslate = np.array((0,0,thirdCubeLength))
@@ -171,8 +171,6 @@ def generateImages(outputDirectory):
     t4 = np.add(t3,leftTranslate).tolist()
     worldPoints = [b1,b2,b3,b4,mb1,mb2,mb3,mb4,mt1,mt2,mt3,mt4,t1,t2,t3,t4]
 
-    
-
 
 
 
@@ -185,13 +183,54 @@ def generateImages(outputDirectory):
 
         pixelPoints.extend([int(n) for n in ((cameraPoint*imageSize).to_tuple(0))[:-1]])
 
-    print(cameraPoints)
-    print(pixelPoints)
 
-    with open("outputTest/cornerPoints.csv", 'a') as f:
-        writer = csv.writer(f)
-        writer.writerow(pixelPoints)
+    # with open("outputTest/cornerPoints.csv", 'a') as f:
+    #     writer = csv.writer(f)
+    #     writer.writerow(pixelPoints)
 
+
+
+    # sticker1Corners = [0, 1, 4, 5]
+    # sticker2Corners = [1, 2, 5, 6]
+    # sticker3Corners = [2, 3, 6, 7]
+    # sticker4Corners = [4, 5, 8, 9]
+    # sticker5Corners = [5, 6, 9, 10]
+    # sticker6Corners = [6, 7, 10, 11]
+    # sticker7Corners = [8, 9, 12, 13]
+    # sticker8Corners = [9, 10, 13, 14]
+    # sticker9Corners = [11, 12, 14, 15]
+    # stickers = np.array([sticker1Corners,sticker2Corners,sticker3Corners,sticker4Corners,sticker5Corners,sticker6Corners,sticker7Corners,sticker8Corners,sticker9Corners])
+
+    stickers = np.array([[0, 1, 4, 5],
+                    [1, 2, 5, 6],
+                    [2, 3, 6, 7],
+                    [4, 5, 8, 9],
+                    [5, 6, 9, 10],
+                    [6, 7, 10, 11],
+                    [8, 9, 12, 13],
+                    [9, 10, 13, 14],
+                    [11, 12, 14, 15]])
+
+    
+
+
+    annotations = []
+    images = []
+    for c in range(stickers.shape[0]):
+        xValues = []
+        yValues = []
+        for i in stickers[c]:
+            xValues.append(pixelPoints[i*2])
+            yValues.append(pixelPoints[(i*2)+1])
+        annotID = (imageID*9)+c
+        annot, image = generateAnnotations(annotID, imageID, scramble[c], xValues, yValues)
+        images.append(image)
+        annotations.append(annot)
+
+
+
+
+    
 
 
 
@@ -205,8 +244,8 @@ def generateImages(outputDirectory):
     bproc.renderer.set_noise_threshold(0.01)
 
 # set random hdri background and lighting
-    haven_hdri_path = bproc.loader.get_random_world_background_hdr_img_path_from_haven("haven")
-    bproc.world.set_world_background_hdr_img(haven_hdri_path)
+    # haven_hdri_path = bproc.loader.get_random_world_background_hdr_img_path_from_haven("haven")
+    # bproc.world.set_world_background_hdr_img(haven_hdri_path)
 
     # with open(os.path.join(outputDirectory, "havenCheck", 'a')) as f:
     #     writer = csv.writer(f)
@@ -229,20 +268,91 @@ def generateImages(outputDirectory):
     #                                 color_file_format="JPEG",
     #                                 append_to_existing_output=True)
 
+    return annotations, images
 
 def main():
+    labelDict = {
+            'info': {
+                'dataset_name': 'cubeVision',
+                'authors': 'Alex and Keegan'
+                },
+            'categories':[
+                    {
+                        'id':0,
+                        'name':'red',
+                        'supercategory':'sticker'
+                    },
+                    {
+                        'id':1,
+                        'name':'blue',
+                        'supercategory':'sticker'
+                    },
+                    {
+                        'id':2,
+                        'name':'orange',
+                        'supercategory':'sticker'
+                    },
+                    {
+                        'id':3,
+                        'name':'green',
+                        'supercategory':'sticker'
+                    },
+                    {
+                        'id':4,
+                        'name':'yellow',
+                        'supercategory':'sticker'
+                    },
+                    {
+                        'id':5,
+                        'name':'white',
+                        'supercategory':'sticker'
+                    },
+                ]
+            }
     numImages = int(sys.argv[1])
-    directories = ["training", "test", "validation"]
-    for d in directories:
-        for i in range(numImages):
-            try:
-                generateImages(os.path.join("dataset/", d))
-            except Exception as e:
-                print("Unresolved blenderproc error, continueing")
-                i-=1
-                # with open("outputTest/havenCheck", 'a') as f:
-                #     writer = csv.writer(f)
-                #     writer.writerow("Error!")
-            bproc.utility.reset_keyframes()
+    allAnnotations = []
+    allImages = []
+    for i in range(numImages):
+        try:
+            annotations, images = generateImages("dataset/", i)
+            allAnnotations.append(annotations)
+            allImages.append(images)
+
+        except Exception as e:
+            print("Unresolved blenderproc error, continueing")
+            i-=1
+            # with open("outputTest/havenCheck", 'a') as f:
+            #     writer = csv.writer(f)
+            #     writer.writerow("Error!")
+        bproc.utility.reset_keyframes()
+
+    labelDict["annotations"] = allAnnotations
+    labelDict["images"] = allImages
+    annotJsonString = json.dumps(labelDict)
+    with open('outputTest/labels.json', 'a') as labelFile:
+        labelFile.write(annotJsonString)
+
+
+def generateAnnotations(ID, imageID, categoryID, xValues, yValues):
+    x = int(min(xValues))
+    y = int(min(yValues))
+    width = int(np.abs(x-max(xValues)))
+    height = int(np.abs(y-max(yValues)))
+    bbox = [x,y,width,height]
+    annotationDict = {
+            'id':ID,
+            'image_id':imageID,
+            'category_id':categoryID,
+            'bbox':bbox
+            }
+    imageDict = {
+            'id':imageID,
+            'file_name':str(imageID)+'.jpg'
+
+            }
+    return annotationDict, imageDict
+
+
 if __name__ == '__main__':
+    # generateImages('outputTest', 0)
     main()
