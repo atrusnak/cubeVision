@@ -254,27 +254,30 @@ def generateImages(outputDirectory, imageID):
     bproc.renderer.set_noise_threshold(0.01)
 
 # set random hdri background and lighting
-    haven_hdri_path = bproc.loader.get_random_world_background_hdr_img_path_from_haven("haven")
-    bproc.world.set_world_background_hdr_img(haven_hdri_path)
+    try:
+        haven_hdri_path = bproc.loader.get_random_world_background_hdr_img_path_from_haven("haven")
+        bproc.world.set_world_background_hdr_img(haven_hdri_path)
+    except Exception as e:
+        raise 
 
     with open(os.path.join('outputTest', "havenCheck"), 'a') as f:
         f.write(haven_hdri_path+'\n')
 
-    data = bproc.renderer.render(output_dir='outputTest', file_prefix='')
+    data = bproc.renderer.render()
 
 # for segmentation map
-    data.update(bproc.renderer.render_segmap(map_by=["instance", "class"]))
+    # data.update(bproc.renderer.render_segmap(map_by=["instance", "class"]))
 
 
 # write to file
-    # bproc.writer.write_hdf5("outputTest", data, append_to_existing_output=True)
+    bproc.writer.write_hdf5("outputTest", data, append_to_existing_output=True)
 
 # Write data to coco file
-    bproc.writer.write_coco_annotations('outputTest',
-                                    instance_segmaps=data["instance_segmaps"],
-                                    colors=data["colors"],
-                                    color_file_format="JPEG",
-                                    append_to_existing_output=True)
+    # bproc.writer.write_coco_annotations('outputTest',
+    #                                 instance_segmaps=data["instance_segmaps"],
+    #                                 colors=data["colors"],
+    #                                 color_file_format="JPEG",
+    #                                 append_to_existing_output=True)
 
     return annotations, images
 
@@ -322,6 +325,7 @@ def main():
     allImages = []
     for i in range(numImages):
         try:
+            bproc.utility.reset_keyframes()
             annotations, images = generateImages("dataset/", i)
 
         except Exception as e:
@@ -329,9 +333,7 @@ def main():
             i-=1
             with open(os.path.join('outputTest', "havenCheck"), 'a') as f:
                 f.write("ERROR!")
-            bproc.utility.reset_keyframes()
             continue
-        bproc.utility.reset_keyframes()
         allAnnotations.extend(annotations)
         allImages.extend(images)
 
