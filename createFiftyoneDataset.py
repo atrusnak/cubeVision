@@ -10,9 +10,8 @@ dataset_dir = "outputTest"
 dataset_type = fo.types.COCODetectionDataset  # for example
 
 dataset = fo.Dataset.from_dir(
-    data_path="outputTest/images",
+    data_path="outputTest/data",
     labels_path="outputTest/labels.json",
     dataset_type=dataset_type,
     name=name,
 )
-session = fo.launch_app(dataset)

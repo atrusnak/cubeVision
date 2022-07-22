@@ -200,7 +200,8 @@ def generateImages(outputDirectory, imageID):
     # sticker6Corners = [6, 7, 10, 11]
     # sticker7Corners = [8, 9, 12, 13]
     # sticker8Corners = [9, 10, 13, 14]
-    # sticker9Corners = [11, 12, 14, 15]
+    # sticker9Corners = [10, 11, 14, 15]
+    # cubeCorners = [0, 3, 14, 15]
     # stickers = np.array([sticker1Corners,sticker2Corners,sticker3Corners,sticker4Corners,sticker5Corners,sticker6Corners,sticker7Corners,sticker8Corners,sticker9Corners])
 
     print(pixelPoints)
@@ -212,7 +213,8 @@ def generateImages(outputDirectory, imageID):
                     [6, 7, 10, 11],
                     [8, 9, 12, 13],
                     [9, 10, 13, 14],
-                    [10, 11, 14, 15]])
+                    [10, 11, 14, 15],
+                    [0, 3, 12, 15]])
 
     
 
@@ -220,13 +222,24 @@ def generateImages(outputDirectory, imageID):
     annotations = []
     images = []
     for c in range(stickers.shape[0]):
+        #for the cube bounding box
         xValues = []
         yValues = []
         for i in stickers[c]:
             xValues.append(pixelPoints[i*2])
             yValues.append(pixelPoints[(i*2)+1])
-        annotID = (imageID*9)+c
-        annot = generateAnnotations(annotID, imageID, scramble[c], xValues, yValues)
+
+        if(c == stickers.shape[0]-1):
+            annotID = (imageID*10)+c
+            annot = generateAnnotations(annotID, imageID, 6, xValues, yValues)
+            print("cube" + str(c))
+        else:
+            print("sticker" + str(c))
+            annotID = (imageID*10)+c
+            annot = generateAnnotations(annotID, imageID, scramble[c], xValues, yValues)
+
+
+
 
         annotations.append(annot)
 
@@ -318,6 +331,11 @@ def main():
                         'name':'white',
                         'supercategory':'sticker'
                     },
+                    {
+                        'id':6,
+                        'name':'cube',
+                        'supercategory':'wholeCube'
+                    }
                 ]
             }
     numImages = int(sys.argv[1])
