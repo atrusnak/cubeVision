@@ -1,6 +1,5 @@
 # ingore blenderProc output
 *.hdf5
-haven/
 MaskerV1/
 UNET*
 ModelWithMask*
