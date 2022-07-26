@@ -1,6 +1,6 @@
 # cubeVision
 
-##Installation
+## Installation
 
 Clone the repository 
     git clone https://github.com/atrusnak/cubeVision
