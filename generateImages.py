@@ -30,7 +30,7 @@ def white(cube):
     cube.rotation_euler =  (math.radians(-90), math.radians(0),math.radians(0))
 
 
-def generateImages(outputDirectory, imageID):
+def generateImage(outputDirectory, imageID):
     bproc.init()
     # load rubik's cube model (already positioned at (0,0,0))
     bproc.loader.load_blend("cube.blend")
@@ -253,14 +253,6 @@ def generateImages(outputDirectory, imageID):
     images.append(imageDict)
 
 
-    
-
-
-
-
-
-
-
 
 
 
@@ -295,6 +287,7 @@ def generateImages(outputDirectory, imageID):
     return annotations, images
 
 def main():
+    #define base dictionary for label json
     labelDict = {
             'info': {
                 'dataset_name': 'cubeVision',
@@ -338,31 +331,49 @@ def main():
                     }
                 ]
             }
+    #number of images to generate is given as a command line arg 
     numImages = int(sys.argv[1])
+
+    #collect all images and annotations
     allAnnotations = []
     allImages = []
     for i in range(numImages):
         try:
+            #need to reset blenderproc frames before each render
             bproc.utility.reset_keyframes()
-            annotations, images = generateImages("dataset/", i)
+            #run our generateImage command 
+            annotation, image = generateImage("dataset/", i)
 
+        #Some of the randomly selected backgrounds cause an unresolved error
+        #in blenderproc
         except Exception as e:
             print("Unresolved blenderproc error, continueing")
+            #don't count the failed render
             i-=1
+            #write which background failed to a text file for future deletion
             with open(os.path.join('outputTest', "havenCheck"), 'a') as f:
                 f.write("ERROR!")
+            #continue rendering images
             continue
-        allAnnotations.extend(annotations)
-        allImages.extend(images)
+        #add current image and annotation to the list
+        allAnnotations.extend(annotation)
+        allImages.extend(image)
 
+    #Create a dictionaries for the annnotation and images sections of the 
+    # labels file. Following the COCO Dataset format see link
+    # https://cocodataset.org/#format-data
     labelDict["annotations"] = allAnnotations
     labelDict["images"] = allImages
+    
+    #Write dictionaries to labels.json
     annotJsonString = json.dumps(labelDict)
     with open('outputTest/labels.json', 'a') as labelFile:
         labelFile.write(annotJsonString)
 
-
+#Given generated key points, creates bounding boxes and returns formatted 
+#labels in the COCO dataset format 
 def generateAnnotations(ID, imageID, categoryID, xValues, yValues):
+    #Bounding boxes defined by top right point and width/height
     x = int(min(xValues))
     y = int(min(yValues))
     width = int(np.abs(x-max(xValues)))
