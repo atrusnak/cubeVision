@@ -5,6 +5,8 @@ MaskerV1/
 UNET*
 ModelWithMask*
 outputTest/*
+*.txt
+*.jpg
 
 
 # Byte-compiled / optimized / DLL files

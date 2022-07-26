@@ -15,3 +15,5 @@ dataset = fo.Dataset.from_dir(
     dataset_type=dataset_type,
     name=name,
 )
+
+dataset.persistent = True
