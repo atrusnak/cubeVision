@@ -3,9 +3,11 @@
 ## Installation
 
 Clone the repository 
+
     git clone https://github.com/atrusnak/cubeVision
 
 Switch to peer review branch
+
     git checkout for_peer_review
 
 If using anaconda or similar virtual environment, first install pip
