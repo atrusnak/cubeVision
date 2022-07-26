@@ -1,6 +1,8 @@
 # cubeVision
 
-## Installation
+## Installation 
+
+### These instructions are for Linux and MacOS. If you are using windows, I suggest wiping your machine and installing Linux. If that is too radical, you can use the Windows Subsystem for Linux (WSL)
 
 Clone the repository 
 
@@ -21,6 +23,8 @@ From pip install blenderproc
 Run the generateImages script, the number of images you want to generate is given
 as a command line argument (ensure you are within the project directory cloned 
 from github)
+
+Note: the first time blenderproc is run it will instal blender. This can take a few minutes.
 
     blenderproc run generateImages.py 1
 
