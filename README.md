@@ -19,7 +19,7 @@ From pip install blenderproc
     pip install blenderproc
 
 Run the generateImages script, the number of images you want to generate is given as a command
-line argumen (ensure you are within the project directory cloned from github
+line argument (ensure you are within the project directory cloned from github)
 
     blenderproc run generateImages.py 1
 
