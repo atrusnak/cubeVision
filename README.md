@@ -2,8 +2,6 @@
 
 ## Installation 
 
-### These instructions are for Linux and MacOS. If you are using windows, I suggest wiping your machine and installing Linux. If that is too radical, you can use the Windows Subsystem for Linux (WSL)
-
 Clone the repository 
 
     git clone https://github.com/atrusnak/cubeVision
@@ -34,6 +32,13 @@ be viewed with blenderproc
 
     blenderproc vis hdf5 outputTest/0.hdf5
 
+These hdf5 files can be converted into JPEG images using:
+
+    python convertHDF5toJPG.py
+    
+Then the augment file will overwrite some of the generatedImages with color augmented verisons
+
+    python augment.py
 
 ## Peer Review
 
