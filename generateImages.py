@@ -130,7 +130,7 @@ def generateImages(outputDirectory, imageID):
 
 
 
-    # Determine corner points in world coordinates
+    # Determine corner points in world coordinates of each sticker
     # units are meters
     # center of cube is 0,0,0
     # Width of cube is 0.05, use 0.025 for half
@@ -152,6 +152,7 @@ def generateImages(outputDirectory, imageID):
     leftTranslate = np.array((thirdCubeLength,0,0))
     upTranslate = np.array((0,0,thirdCubeLength))
 
+    #starting point
     brCorner = np.array((-halfCubeLength, halfCubeLength, -halfCubeLength))
 
     b1 = brCorner
@@ -265,16 +266,16 @@ def generateImages(outputDirectory, imageID):
 
 
     bproc.renderer.set_noise_threshold(0.01)
-
+    cur_path = os.path.abspath(os.getcwd())
 # set random hdri background and lighting
     try:
-        haven_hdri_path = bproc.loader.get_random_world_background_hdr_img_path_from_haven("haven")
+        haven_hdri_path = bproc.loader.get_random_world_background_hdr_img_path_from_haven(cur_path + "\haven")
         bproc.world.set_world_background_hdr_img(haven_hdri_path)
     except Exception as e:
         raise 
 
-    with open(os.path.join('outputTest', "havenCheck"), 'a') as f:
-        f.write(haven_hdri_path+'\n')
+   # with open(os.path.join('outputTest', "havenCheck"), 'a') as f:
+   #     f.write(haven_hdri_path+'\n')
 
     data = bproc.renderer.render()
 
@@ -341,6 +342,7 @@ def main():
     numImages = int(sys.argv[1])
     allAnnotations = []
     allImages = []
+    cur_path = os.path.abspath(os.getcwd())
     for i in range(numImages):
         try:
             bproc.utility.reset_keyframes()
@@ -349,7 +351,7 @@ def main():
         except Exception as e:
             print("Unresolved blenderproc error, continueing")
             i-=1
-            with open(os.path.join('outputTest', "havenCheck"), 'a') as f:
+            with open(os.path.join(cur_path + '\outputTest', "havenCheck"), 'a') as f:
                 f.write("ERROR!")
             continue
         allAnnotations.extend(annotations)
