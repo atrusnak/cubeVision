@@ -1,8 +1,11 @@
 import torch
 import torchvision.transforms as transforms
 from PIL import Image
-#import imgaug.augmenters as iaa
+import imgaug.augmenters as iaa
 import os
+import glob
+import cv2
+import matplotlib.pyplot as plt
 
 cur_path = os.path.abspath(os.getcwd())
 
@@ -10,24 +13,26 @@ cur_path = os.path.abspath(os.getcwd())
 # of the brightness, contrast, saturation, and hue
 # https://pytorch.org/vision/main/generated/torchvision.transforms.ColorJitter.html
 
-def augment(img):
-    transform = transforms.ColorJitter(brightness=.5, contrast=.5, saturation=.5, hue=.30)
-    img = transform(img)
-    return img
+# Old method
 
-# An additional image augmentation library with increased effects and augmentations
+#def augment(img):
+#    transform = transforms.ColorJitter(brightness=1, contrast=1, saturation=1, hue=0)
+#    img = transform(img)
+#    return img
+
 #https://github.com/aleju/imgaug 
-#one = iaa.OneOf([
-#    iaa.MedianBlur(k = (3,11)),
-#    iaa.AverageBlur(k = (2,7)),
-#    iaa.GaussianBlur(sigma=(0, 3.0))
-#])
+# Chooses one of the effects and applies it to the image
+one = iaa.OneOf([
+    iaa.MedianBlur(k = (3,11)),
+    iaa.AverageBlur(k = (2,7)),
+    iaa.GaussianBlur(sigma=(0, 3.0))
+])
 
-# Accesses the first 60 images generated from generateImage.py, 
-# augments them, and then overwrites the image with the new augmented version
-for i in range(60):
+# Accesses the first 20 images generated from generateImage.py, 
+# augments them, and then saves them into a new directory
+image_path = os.path.join(cur_path,"outputTest","data", "*.jpg")
+images = [cv2.imread(image) for image in glob.glob(image_path)]
+images_aug = one(images = images)
+for i in range(20):
     filename = str(i).zfill(6)
-    image_path = cur_path + "\outputTest\\\\" + "data" + filename+ ".jpg"
-    image = Image.open(image_path)
-    image = augment(image)
-    image = image.save(image_path)
+    cv2.imwrite(os.path.join(cur_path, "outputTest", "augData", filename + ".jpg"), images_aug[i])
