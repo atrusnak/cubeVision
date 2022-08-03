@@ -4,9 +4,9 @@ from PIL import Image
 import os
 
 cur_path = os.path.abspath(os.getcwd())
-for i in range(100):
-    hdf = h5py.File(cur_path + '\outputTest\\\\'+ "" + str(i+10)+".hdf5",'r')
+for i in range(20):
+    hdf = h5py.File(os.path.join(cur_path,"outputTest", str(i)+".hdf5"),'r')
     array = hdf["colors"][:]
     img = Image.fromarray(array.astype('uint8'), 'RGB')
     filename = str(i).zfill(6)
-    img.save(cur_path + "\outputTest"+"\data"+filename+".jpg", "JPEG")
+    img.save(os.path.join(cur_path,"outputTest","data",filename+".jpg"), "JPEG")
