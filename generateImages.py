@@ -10,6 +10,8 @@ import os
 import sys
 import json
 
+curr = os.path.dirname(__file__)
+
 # cube coloring functions
 def red(cube):
     cube.rotation_euler = (math.radians(0), math.radians(0),math.radians(90))
@@ -32,15 +34,26 @@ def white(cube):
 
 def generateImages(outputDirectory, imageID):
     bproc.init()
+
+    #get random foreground object
+    modelPath = random.choice(os.listdir('blenderkit/models'))
+
+    backgroundObject = bproc.loader.load_blend(os.path.join(curr,'blenderkit','models',modelPath))[0]
+    cubeTranslate = mathutils.Vector((0.0,1.0,0.0))
+    
+
     # load rubik's cube model (already positioned at (0,0,0))
-    bproc.loader.load_blend("cube.blend")
+    cubeObject = bproc.loader.load_blend("stickerlessCube.blend")[0]
 
     # collect objects as bpy objects (as opposed to blenderproc)
     objects = bpy.data.objects
     faceCubes = []
     for obj in objects:
+        print(obj.name)
         if('FRONT' in obj.name):
             faceCubes.append(obj)
+        if('cube' in obj.name or 'Cube' in obj.name):
+            obj.location.y += 1.0
 
 
     # Randomly scramble the front cube face
@@ -116,9 +129,10 @@ def generateImages(outputDirectory, imageID):
 
 
     #sample camera positions
-    location = np.random.uniform([0.1, 0.5, 0.1], [-0.1, 0.2, -0.1])
+    location = np.random.uniform([0.1, 1.5, 0.1], [-0.1, 1.2, -0.1])
+    
     # Compute rotation based on vector going from location towards poi
-    rotation_matrix = bproc.camera.rotation_from_forward_vec(np.random.uniform([0.05, 0.05, 0.05], [-0.05, -0.05, -0.05]) - location)
+    rotation_matrix = bproc.camera.rotation_from_forward_vec(np.random.uniform([0.05, 1.05, 0.05], [-0.05, 0.95, -0.05]) - location)
     # Add homog cam pose based on location an rotation
     cam2world_matrix = bproc.math.build_transformation_mat(location, rotation_matrix)
     bproc.camera.add_camera_pose(cam2world_matrix)
