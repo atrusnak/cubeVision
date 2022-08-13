@@ -102,16 +102,16 @@ def generateImages(outputDirectory, imageID):
     # this could be useful later
     # light now being controlled by hdri alone
 
-    # light = bproc.types.Light()
-    # light.set_type("POINT")
-    # light.set_location(
-    #     bproc.sampler.sphere(
-    #         center=[0,0,0],
-    #         radius=1,
-    #         mode='SURFACE'
-    #     )
-    # )
-    # light.set_energy(1000)
+    light = bproc.types.Light()
+    light.set_type("POINT")
+    light.set_location(
+        bproc.sampler.sphere(
+            center=[0,0,0],
+            radius=1,
+            mode='SURFACE'
+        )
+    )
+    light.set_energy(random.randint(2000, 3000))
 
 
 
@@ -268,11 +268,11 @@ def generateImages(outputDirectory, imageID):
     bproc.renderer.set_noise_threshold(0.01)
     cur_path = os.path.abspath(os.getcwd())
 # set random hdri background and lighting
-    try:
-        haven_hdri_path = bproc.loader.get_random_world_background_hdr_img_path_from_haven(cur_path + "\haven")
-        bproc.world.set_world_background_hdr_img(haven_hdri_path)
-    except Exception as e:
-        raise 
+    # try:
+    #     haven_hdri_path = bproc.loader.get_random_world_background_hdr_img_path_from_haven(cur_path + "\haven")
+    #     bproc.world.set_world_background_hdr_img(haven_hdri_path)
+    # except Exception as e:
+    #     raise 
 
    # with open(os.path.join('outputTest', "havenCheck"), 'a') as f:
    #     f.write(haven_hdri_path+'\n')
