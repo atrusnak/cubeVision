@@ -1,10 +1,10 @@
 names:
-- blue
 - orange
-- green
-- yellow
 - red
-- cube
+- blue
 - white
+- green
+- cube
+- yellow
 nc: 7
-val: ./images/val/
+val: .\images\val\
