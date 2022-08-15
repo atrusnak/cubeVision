@@ -13,8 +13,8 @@ dataset_dir = "outputTest"
 dataset_type = fo.types.COCODetectionDataset  # for example
 
 dataset = fo.Dataset.from_dir(
-    data_path=os.path.join(cur_path,"outputTest","data"),
-    labels_path=os.path.join(cur_path,"outputTest","labels.json"),
+    data_path=os.path.join(cur_path,"outputTest","augData"),
+    labels_path=os.path.join(cur_path,"outputTest","augData","labels.json"),
     dataset_type=dataset_type,
     name=name,
 )

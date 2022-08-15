@@ -254,17 +254,6 @@ def generateImages(outputDirectory, imageID):
     images.append(imageDict)
 
 
-    
-
-
-
-
-
-
-
-
-
-
     bproc.renderer.set_noise_threshold(0.01)
     cur_path = os.path.abspath(os.getcwd())
 # set random hdri background and lighting
@@ -360,7 +349,7 @@ def main():
     labelDict["annotations"] = allAnnotations
     labelDict["images"] = allImages
     annotJsonString = json.dumps(labelDict)
-    with open('outputTest/labels.json', 'a') as labelFile:
+    with open('outputTest/labels.json', 'w+') as labelFile:
         labelFile.write(annotJsonString)
 
 
