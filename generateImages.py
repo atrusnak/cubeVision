@@ -104,13 +104,28 @@ def generateImages(outputDirectory, imageID):
 
     light = bproc.types.Light()
     light.set_type("POINT")
-    light.set_location(
-        bproc.sampler.sphere(
-            center=[0,0,0],
-            radius=1,
-            mode='SURFACE'
+    coin = random.randint(0,1)
+    if(coin == 0):
+        light.set_location(
+            bproc.sampler.shell(
+                center=[0,0,0],
+                radius_min=.5,
+                radius_max=1,
+                azimuth_min=-180.0,
+                azimuth_max=70.0
+            )
         )
-    )
+    else:
+        light.set_location(
+            bproc.sampler.shell(
+                center=[0,0,0],
+                radius_min=.5,
+                radius_max=1,
+                azimuth_min=110.0,
+                azimuth_max=180.0
+            )
+        )
+
     light.set_energy(random.randint(2000, 3000))
 
 
@@ -268,14 +283,14 @@ def generateImages(outputDirectory, imageID):
     bproc.renderer.set_noise_threshold(0.01)
     cur_path = os.path.abspath(os.getcwd())
 # set random hdri background and lighting
-    # try:
-    #     haven_hdri_path = bproc.loader.get_random_world_background_hdr_img_path_from_haven(cur_path + "\haven")
-    #     bproc.world.set_world_background_hdr_img(haven_hdri_path)
-    # except Exception as e:
-    #     raise 
-
-   # with open(os.path.join('outputTest', "havenCheck"), 'a') as f:
-   #     f.write(haven_hdri_path+'\n')
+    try:
+        haven_hdri_path = bproc.loader.get_random_world_background_hdr_img_path_from_haven(os.path.join(cur_path,"haven"))
+        bproc.world.set_world_background_hdr_img(haven_hdri_path)
+    except Exception as e:
+        raise 
+    
+    with open(os.path.join("outputTest", "havenCheck"), 'a') as f:
+       f.write(haven_hdri_path+'\n')
 
     data = bproc.renderer.render()
 
@@ -351,7 +366,7 @@ def main():
         except Exception as e:
             print("Unresolved blenderproc error, continueing")
             i-=1
-            with open(os.path.join(cur_path + '\outputTest', "havenCheck"), 'a') as f:
+            with open(os.path.join(cur_path,'outputTest', "havenCheck"), 'a') as f:
                 f.write("ERROR!")
             continue
         allAnnotations.extend(annotations)

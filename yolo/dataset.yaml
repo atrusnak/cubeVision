@@ -1,10 +1,10 @@
 names:
-- blue
-- orange
-- green
 - yellow
-- red
-- cube
 - white
+- orange
+- red
+- blue
+- green
+- cube
 nc: 7
 val: ./images/val/
