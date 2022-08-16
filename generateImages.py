@@ -258,7 +258,7 @@ def generateImages(outputDirectory, imageID):
     cur_path = os.path.abspath(os.getcwd())
 # set random hdri background and lighting
     try:
-        haven_hdri_path = bproc.loader.get_random_world_background_hdr_img_path_from_haven(cur_path + "\haven")
+        haven_hdri_path = bproc.loader.get_random_world_background_hdr_img_path_from_haven(os.path.join(cur_path, "haven"))
         bproc.world.set_world_background_hdr_img(haven_hdri_path)
     except Exception as e:
         raise 
