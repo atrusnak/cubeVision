@@ -4,7 +4,7 @@ haven/
 MaskerV1/
 UNET*
 ModelWithMask*
-outputTest/*
+#outputTest/*
 *.txt
 *.jpg
 

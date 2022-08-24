@@ -1,20 +1,26 @@
 # cubeVision
 
+## INFO
+
+This project generates a sythetic dataset of Rubik's cube images 
+
+The 3D cube models used are cube.blend and whiteCube.blend and they represent a black plastic and 
+white plastic cube respectively. Images can be rendered with either by modifying the model path in generateImages.py
+The models were origally obtained from Blenderkit https://www.blenderkit.com/
+
 ## Installation 
 
 Clone the repository 
 
     git clone https://github.com/atrusnak/cubeVision
 
-Switch to peer review branch
-
-    git checkout for_peer_review
-
 If using anaconda or similar virtual environment, first install pip
 
     conda install pip
 
-From pip install blenderproc
+From pip install blenderproc 
+Blenderproc is the library that is used to help generate our synthetic dataset. For more info, see:
+https://github.com/DLR-RM/BlenderProc
 
     pip install blenderproc
 
