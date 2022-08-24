@@ -40,10 +40,4 @@ Then the augment file will overwrite some of the generatedImages with color augm
 
     python augment.py
 
-## Peer Review
 
-The code to be reviewed is found in the file **augment.py** in the root 
-directory of the repository. This file color augments the specified amount of images. 
-I am using the simple ColorJitter function from torchvision, I will be looking into a 
-more sophfisticated version of this augmentation which keeps track of the keypoints and
-bounding boxes, so I can introduce positional augmentation as well.
