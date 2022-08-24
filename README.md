@@ -37,9 +37,11 @@ Note: the first time blenderproc is run it will instal blender. This can take a 
 
     blenderproc run generateImages.py 1
 
-Images and labels are saved to the outputTest directory. Images are saved as 
-hdf5 files and can 
-be viewed with blenderproc
+Images and labels are saved to the outputTest directory.
+Labels are recorded in the COCO annotation format in labels.json and can be converted to other formats using
+a utility called fiftyone https://voxel51.com/docs/fiftyone/
+Images are saved as hdf5 files and can 
+be viewed with blenderproc as below
 
     blenderproc vis hdf5 outputTest/0.hdf5
 
