@@ -24,6 +24,11 @@ https://github.com/DLR-RM/BlenderProc
 
     pip install blenderproc
 
+Use Blenderproc to download the random backgrounds used in rendering to the 'haven' folder, not every 
+background is needed but ensure no empty folders are in the haven hdris folder if you stop the dowload early
+
+    blenderproc download haven haven --types hdris --resolution "1k"
+
 Run the generateImages script, the number of images you want to generate is given
 as a command line argument (ensure you are within the project directory cloned 
 from github)
