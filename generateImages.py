@@ -11,6 +11,11 @@ import sys
 import json
 
 # cube coloring functions
+# We can change the color displayed on the front face of the Rubik's cube by rotating 
+# the colored cubes that make up the full Rubik's cube
+# The rotation necessary to display each color is made into a function below
+
+# These functions take a face cube as input and rotate it to the appopriate color
 def red(cube):
     cube.rotation_euler = (math.radians(0), math.radians(0),math.radians(90))
 
@@ -30,13 +35,17 @@ def white(cube):
     cube.rotation_euler =  (math.radians(-90), math.radians(0),math.radians(0))
 
 
+#The main function to generate an image of a random cube
 def generateImages(outputDirectory, imageID):
+    #need to initialize blenderproc
     bproc.init()
     # load rubik's cube model (already positioned at (0,0,0))
+    # here we can also load whiteCube.blend for a white plastic cube
     bproc.loader.load_blend("cube.blend")
 
     # collect objects as bpy objects (as opposed to blenderproc)
     objects = bpy.data.objects
+    # the face cubes are the 9 colored cubes that make up the front face
     faceCubes = []
     for obj in objects:
         if('FRONT' in obj.name):
@@ -46,6 +55,7 @@ def generateImages(outputDirectory, imageID):
     # Randomly scramble the front cube face
 
     # record the scramble as a 1D vector
+    # each color is represented as a number between 0-5
     scramble = []
     faceCubes.reverse()
     for cube in faceCubes:
@@ -77,9 +87,7 @@ def generateImages(outputDirectory, imageID):
     # collect objects as blenderproc objects
     bprocCubes = bproc.object.get_all_mesh_objects()
 
-    # pretty sure their filter shit just doesn't work
-    # faceCubes = bproc.filter.by_attr(cubes,"name", "FRONT*", regex=True)
-
+    # DEPRECATED
     # get face cubes and assign them to a different category for image segmentation later
     bprocFaceCubes = []
     for i, cube in enumerate(bprocCubes):
@@ -90,17 +98,17 @@ def generateImages(outputDirectory, imageID):
 
     for i, faceCube in enumerate(bprocFaceCubes):
             faceCube.set_cp("category_id",scramble[i]+1)
-    # reset scramble after using it for id's
-    # scramble = []
 
 
+
+    #set image render size as 256 square
     imageSize=256
-    bproc.camera.set_resolution(256,256)
+    bproc.camera.set_resolution(imageSize,imageSize)
 
 
 
-    # this could be useful later
     # light now being controlled by hdri alone
+    # This is used in high lighting variance augmentation
 
     # light = bproc.types.Light()
     # light.set_type("POINT")
@@ -115,15 +123,17 @@ def generateImages(outputDirectory, imageID):
 
 
 
-    #sample camera positions
+    #sample random camera positions
     location = np.random.uniform([0.1, 0.5, 0.1], [-0.1, 0.2, -0.1])
     # Compute rotation based on vector going from location towards poi
     rotation_matrix = bproc.camera.rotation_from_forward_vec(np.random.uniform([0.05, 0.05, 0.05], [-0.05, -0.05, -0.05]) - location)
-    # Add homog cam pose based on location an rotation
+    # build transformation matrix between world and camera coordinates
     cam2world_matrix = bproc.math.build_transformation_mat(location, rotation_matrix)
+    # add the camera to the world
     bproc.camera.add_camera_pose(cam2world_matrix)
 
 
+    # Collect the camera and scene objects
     camera = bpy.data.objects['Camera']
     scene = bpy.context.scene
 
@@ -143,18 +153,34 @@ def generateImages(outputDirectory, imageID):
     cubeLength = halfCubeLength*2
     thirdCubeLength = cubeLength/3.0
 
-
-    # tr = mathutils.Vector((-halfCubeLength, halfCubeLength, halfCubeLength))
-    # tl = mathutils.Vector((halfCubeLength, halfCubeLength, halfCubeLength))
-    # bl = mathutils.Vector((halfCubeLength, halfCubeLength, -halfCubeLength))
-    # br = mathutils.Vector((-halfCubeLength, halfCubeLength, -halfCubeLength))
-
+    #adding leftTranslate and upTranslate to a point will translate them one sticker length left 
+    # or up respectively, this is used to calculate all the sticker corner points relative to the bottom right
+    # corner
     leftTranslate = np.array((thirdCubeLength,0,0))
     upTranslate = np.array((0,0,thirdCubeLength))
 
-    #starting point
+    #starting point is the bottom right corner
     brCorner = np.array((-halfCubeLength, halfCubeLength, -halfCubeLength))
 
+    #calculate all 16 key sitcker corner points using the defined translations 
+
+    """
+    The key points are the corners of the stickers, defined like so 
+    t4 = top four
+    mt1 = middle top one etc
+
+    t4--t3--t2--t1
+     |   |   |   | 
+    mt4--mt3--mt2--mt1
+     |   |   |   | 
+    mb4--mb3--mb2--mb1
+     |   |   |   | 
+    b4--b3--b2--b1
+
+
+
+
+    """
     b1 = brCorner
     b2 = np.add(b1,leftTranslate).tolist()
     b3 = np.add(b2,leftTranslate).tolist()
@@ -171,19 +197,28 @@ def generateImages(outputDirectory, imageID):
     t2 = np.add(t1,leftTranslate).tolist()
     t3 = np.add(t2,leftTranslate).tolist()
     t4 = np.add(t3,leftTranslate).tolist()
+
+
+    #These points are defined in the world coordinate system, we must transfrom them 
+    # to the camera coordinate system to use them for bounding boxes
     worldPoints = [b1,b2,b3,b4,mb1,mb2,mb3,mb4,mt1,mt2,mt3,mt4,t1,t2,t3,t4]
 
 
 
 
     
+    #create lists for the desired points
     cameraPoints = []
+    #pixel points define the points in pixels instead of a float between 0 and 1
     pixelPoints = []
     for p in worldPoints:
+        #convert the world points to camera points
         cameraPoint = bpy_extras.object_utils.world_to_camera_view(scene,camera,mathutils.Vector(p))
+        #don't need a depth dimension
         cameraPoint[1] = 1-cameraPoint[1]
         cameraPoints.append(cameraPoint)
 
+        #pixel points define the points in pixels
         pixelPoints.extend([int(n) for n in ((cameraPoint*imageSize).to_tuple(0))[:-1]])
 
 
@@ -205,6 +240,8 @@ def generateImages(outputDirectory, imageID):
     # cubeCorners = [0, 3, 14, 15]
     # stickers = np.array([sticker1Corners,sticker2Corners,sticker3Corners,sticker4Corners,sticker5Corners,sticker6Corners,sticker7Corners,sticker8Corners,sticker9Corners])
 
+    #arrang the pixel points into groups by bounding box. Grouping the four corners
+    # of each sticker together
     print(pixelPoints)
     stickers = np.array([[0, 1, 4, 5],
                     [1, 2, 5, 6],
@@ -219,21 +256,26 @@ def generateImages(outputDirectory, imageID):
 
     
 
+    
+    # Every rendered image needs to store label information
+    # we will return this info in annotations and images
 
     annotations = []
     images = []
     for c in range(stickers.shape[0]):
-        #for the cube bounding box
+        #by seperating out the x and y values we can more easily determine the bounding boxes
         xValues = []
         yValues = []
         for i in stickers[c]:
             xValues.append(pixelPoints[i*2])
             yValues.append(pixelPoints[(i*2)+1])
 
+        #the last set of points is for the whole cube not a sticker and must be labeled differently
         if(c == stickers.shape[0]-1):
             annotID = (imageID*10)+c
             annot = generateAnnotations(annotID, imageID, 6, xValues, yValues)
             print("cube" + str(c))
+        #stickers get labeled with their respective color
         else:
             print("sticker" + str(c))
             annotID = (imageID*10)+c
@@ -245,6 +287,7 @@ def generateImages(outputDirectory, imageID):
         annotations.append(annot)
 
 
+    #following the COCO format each image needs an id and file name
     imageDict = {
             'id':imageID,
             'file_name':str(imageID).zfill(6)+'.jpg',
@@ -254,9 +297,11 @@ def generateImages(outputDirectory, imageID):
     images.append(imageDict)
 
 
+    #noise threshold determines the accuracy of the render
     bproc.renderer.set_noise_threshold(0.01)
     cur_path = os.path.abspath(os.getcwd())
-# set random hdri background and lighting
+    # set random hdri background and lighting
+    # some hdri's from haven will cause an unresolvable error that must be caught and handled later
     try:
         haven_hdri_path = bproc.loader.get_random_world_background_hdr_img_path_from_haven(os.path.join(cur_path, "haven"))
         bproc.world.set_world_background_hdr_img(haven_hdri_path)
@@ -266,16 +311,21 @@ def generateImages(outputDirectory, imageID):
    # with open(os.path.join('outputTest', "havenCheck"), 'a') as f:
    #     f.write(haven_hdri_path+'\n')
 
+
+
+    #the final images are rendered 
     data = bproc.renderer.render()
 
 # for segmentation map
+# NO LONGER USED
     # data.update(bproc.renderer.render_segmap(map_by=["instance", "class"]))
 
 
-# write to file
+# write the image to file
     bproc.writer.write_hdf5("outputTest", data, append_to_existing_output=True)
 
 # Write data to coco file
+# NO LONGER USED
     # bproc.writer.write_coco_annotations('outputTest',
     #                                 instance_segmaps=data["instance_segmaps"],
     #                                 colors=data["colors"],
@@ -284,7 +334,9 @@ def generateImages(outputDirectory, imageID):
 
     return annotations, images
 
+#The main function called from command line to generate images
 def main():
+    #The basic structure of the labels json is defined below
     labelDict = {
             'info': {
                 'dataset_name': 'cubeVision',
@@ -328,36 +380,51 @@ def main():
                     }
                 ]
             }
+    #determine the number of images to render from cli arg
     numImages = int(sys.argv[1])
     allAnnotations = []
     allImages = []
     cur_path = os.path.abspath(os.getcwd())
     for i in range(numImages):
+        #try to render each image, some configurations may fail so we catch errors
         try:
             bproc.utility.reset_keyframes()
             annotations, images = generateImages("dataset/", i)
 
         except Exception as e:
             print("Unresolved blenderproc error, continueing")
+            #upon failure we want to decrement our counter so the desired number of images is rendered
             i-=1
+            #print diagnostics on which background failed to render
             with open(os.path.join(cur_path + '\outputTest', "havenCheck"), 'a') as f:
                 f.write("ERROR!")
             continue
+        #collect all images and annotations from renders
         allAnnotations.extend(annotations)
         allImages.extend(images)
 
     labelDict["annotations"] = allAnnotations
     labelDict["images"] = allImages
+    #write the labels to the labels.json file
     annotJsonString = json.dumps(labelDict)
     with open('outputTest/labels.json', 'w+') as labelFile:
         labelFile.write(annotJsonString)
 
 
+#This function return the appropriate JSON section for one bounding box annotation
+#This function's args:
+#the ID of the bounding box
+#the ID of the image
+#the categoryID (color) of the sticker
+#the x and y values of the corner points
+# return a dictionary matching the json format for COCO labels
 def generateAnnotations(ID, imageID, categoryID, xValues, yValues):
+    #determine the top left and top right corners
     x = int(min(xValues))
     y = int(min(yValues))
     width = int(np.abs(x-max(xValues)))
     height = int(np.abs(y-max(yValues)))
+    #bounding boxes are defined as the top left corner and their height+width
     bbox = [x,y,width,height]
     annotationDict = {
             'id':ID,
@@ -369,5 +436,6 @@ def generateAnnotations(ID, imageID, categoryID, xValues, yValues):
 
 
 if __name__ == '__main__':
+    #can be used for testing because normal runs won't output errors
     # generateImages('outputTest', 0)
     main()
