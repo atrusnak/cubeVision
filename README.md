@@ -40,6 +40,13 @@ Note: the first time blenderproc is run it will instal blender. This can take a 
 Images and labels are saved to the outputTest directory.
 Labels are recorded in the COCO annotation format in labels.json and can be converted to other formats using
 a utility called fiftyone https://voxel51.com/docs/fiftyone/
+
+    fiftyone convert \
+                --input-dir outputTest \
+                --input-type fiftyone.types.COCODetectionDataset \
+                --ouput-dir yolo \
+                --output-type fiftyone.types.YOLOv5Dataset
+
 Images are saved as hdf5 files and can 
 be viewed with blenderproc as below
 
